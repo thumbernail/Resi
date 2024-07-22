@@ -1,0 +1,104 @@
+#include <Windows.h>
+
+#include <string>
+
+#include <sstream>
+
+
+Std::string get_gpu_hash() {
+
+HMODULE dxgiModule = LoadLibrary(TEXT(“dxgi.dll”));
+
+If (dxgiModule == NULL) {
+
+Return “Failed to load dxgi.dll”;
+
+}
+
+
+Typedef HRESULT(WINAPI* PFN_CREATE_DXGI_FACTORY)(REFIID, void**);
+
+PFN_CREATE_DXGI_FACTORY CreateDXGIFactory = (PFN_CREATE_DXGI_FACTORY)GetProcAddress(dxgiModule, “CreateDXGIFactory”);
+
+
+If (CreateDXGIFactory == NULL) {
+
+FreeLibrary(dxgiModule);
+
+Return “Failed to get CreateDXGIFactory function”;
+
+}
+
+
+IDXGIFactory* dxgiFactory = nullptr;
+
+HRESULT hr = CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)&dxgiFactory);
+
+
+If (FAILED(hr)) {
+
+FreeLibrary(dxgiModule);
+
+Return “Failed to create DXGI factory”;
+
+}
+
+
+IDXGIAdapter* adapter = nullptr;
+
+Hr = dxgiFactory->EnumAdapters(0, &adapter);
+
+
+If (FAILED(hr)) {
+
+dxgiFactory->Release();
+
+FreeLibrary(dxgiModule);
+
+Return “Failed to enumerate DXGI adapter”;
+
+}
+
+
+DXGI_ADAPTER_DESC desc;
+
+Hr = adapter->GetDesc(&desc);
+
+
+If (FAILED(hr)) {
+
+Adapter->Release();
+
+dxgiFactory->Release();
+
+FreeLibrary(dxgiModule);
+
+Return “Failed to get DXGI adapter description”;
+
+}
+
+
+Std::stringstream ss;
+
+For (int i = 0; i < 16; i++) {
+
+Ss << std::hex << (int)desc.AdapterLuid.UniqueId[i];
+
+}
+
+
+Std::string result = ss.str();
+
+
+Adapter->Release();
+
+dxgiFactory->Release();
+
+FreeLibrary(dxgiModule);
+
+
+Return result;
+
+}
+
+
